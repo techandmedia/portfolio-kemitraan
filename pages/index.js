@@ -1,70 +1,198 @@
-import Layout from '../index.js'
-import { Form, Select, InputNumber, DatePicker, Switch, Slider, Button } from 'antd'
+import Layout from './components/layout'
+import { Table, Input, InputNumber, Popconfirm, Form } from 'antd';
 
-const FormItem = Form.Item
-const Option = Select.Option
+const data = [];
+for (let i = 0; i < 100; i++) {
+  data.push({
+    key: i.toString(),
+    name: `Edrward ${i}`,
+    age: 32,
+    address: `London Park no. ${i}`,
+  });
+}
+const FormItem = Form.Item;
+const EditableContext = React.createContext();
 
-export default () => (
-  <Layout>
-    <div style={{ marginTop: 100 }}>
-      <Form layout='horizontal'>
-        <FormItem
-          label='Input Number'
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 8 }}
-        >
-          <InputNumber size='large' min={1} max={10} style={{ width: 100 }} defaultValue={3} name='inputNumber' />
-          <a href='#'>Link</a>
-        </FormItem>
+const EditableRow = ({ form, index, ...props }) => (
+  <EditableContext.Provider value={form}>
+    <tr {...props} />
+  </EditableContext.Provider>
+);
 
-        <FormItem
-          label='Switch'
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 8 }}
-        >
-          <Switch defaultChecked name='switch' />
-        </FormItem>
+const EditableFormRow = Form.create()(EditableRow);
 
-        <FormItem
-          label='Slider'
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 8 }}
-        >
-          <Slider defaultValue={70} />
-        </FormItem>
+class EditableCell extends React.Component {
+  getInput = () => {
+    if (this.props.inputType === 'number') {
+      return <InputNumber />;
+    }
+    return <Input />;
+  };
 
-        <FormItem
-          label='Select'
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 8 }}
-        >
-          <Select size='large' defaultValue='lucy' style={{ width: 192 }} name='select'>
-            <Option value='jack'>jack</Option>
-            <Option value='lucy'>lucy</Option>
-            <Option value='disabled' disabled>disabled</Option>
-            <Option value='yiminghe'>yiminghe</Option>
-          </Select>
-        </FormItem>
+  render() {
+    const {
+      editing,
+      dataIndex,
+      title,
+      inputType,
+      record,
+      index,
+      ...restProps
+    } = this.props;
+    return (
+      <EditableContext.Consumer>
+        {(form) => {
+          const { getFieldDecorator } = form;
+          return (
+            <td {...restProps}>
+              {editing ? (
+                <FormItem style={{ margin: 0 }}>
+                  {getFieldDecorator(dataIndex, {
+                    rules: [{
+                      required: true,
+                      message: `Please Input ${title}!`,
+                    }],
+                    initialValue: record[dataIndex],
+                  })(this.getInput())}
+                </FormItem>
+              ) : restProps.children}
+            </td>
+          );
+        }}
+      </EditableContext.Consumer>
+    );
+  }
+}
 
-        <FormItem
-          label='DatePicker'
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 8 }}
-        >
-          <DatePicker name='startDate' />
-        </FormItem>
-        <FormItem
-          style={{ marginTop: 48 }}
-          wrapperCol={{ span: 8, offset: 8 }}
-        >
-          <Button size='large' type='primary' htmlType='submit'>
-          OK
-          </Button>
-          <Button size='large' style={{ marginLeft: 8 }}>
-          Cancel
-          </Button>
-        </FormItem>
-      </Form>
-    </div>
-  </Layout>
-)
+class EditableTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { data, editingKey: '' };
+    this.columns = [
+      {
+        title: 'name',
+        dataIndex: 'name',
+        width: '25%',
+        editable: true,
+      },
+      {
+        title: 'age',
+        dataIndex: 'age',
+        width: '15%',
+        editable: true,
+      },
+      {
+        title: 'address',
+        dataIndex: 'address',
+        width: '40%',
+        editable: true,
+      },
+      {
+        title: 'operation',
+        dataIndex: 'operation',
+        render: (text, record) => {
+          const editable = this.isEditing(record);
+          return (
+            <div>
+              {editable ? (
+                <span>
+                  <EditableContext.Consumer>
+                    {form => (
+                      <a
+                        href="javascript:;"
+                        onClick={() => this.save(form, record.key)}
+                        style={{ marginRight: 8 }}
+                      >
+                        Save
+                      </a>
+                    )}
+                  </EditableContext.Consumer>
+                  <Popconfirm
+                    title="Sure to cancel?"
+                    onConfirm={() => this.cancel(record.key)}
+                  >
+                    <a>Cancel</a>
+                  </Popconfirm>
+                </span>
+              ) : (
+                <a onClick={() => this.edit(record.key)}>Edit</a>
+              )}
+            </div>
+          );
+        },
+      },
+    ];
+  }
+
+  isEditing = (record) => {
+    return record.key === this.state.editingKey;
+  };
+
+  edit(key) {
+    this.setState({ editingKey: key });
+  }
+
+  save(form, key) {
+    form.validateFields((error, row) => {
+      if (error) {
+        return;
+      }
+      const newData = [...this.state.data];
+      const index = newData.findIndex(item => key === item.key);
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, {
+          ...item,
+          ...row,
+        });
+        this.setState({ data: newData, editingKey: '' });
+      } else {
+        newData.push(row);
+        this.setState({ data: newData, editingKey: '' });
+      }
+    });
+  }
+
+  cancel = () => {
+    this.setState({ editingKey: '' });
+  };
+
+  render() {
+    const components = {
+      body: {
+        row: EditableFormRow,
+        cell: EditableCell,
+      },
+    };
+
+    const columns = this.columns.map((col) => {
+      if (!col.editable) {
+        return col;
+      }
+      return {
+        ...col,
+        onCell: record => ({
+          record,
+          inputType: col.dataIndex === 'age' ? 'number' : 'text',
+          dataIndex: col.dataIndex,
+          title: col.title,
+          editing: this.isEditing(record),
+        }),
+      };
+    });
+
+    return (
+      <Layout>
+        <Table
+        components={components}
+        bordered
+        dataSource={this.state.data}
+        columns={columns}
+        rowClassName="editable-row"
+      />
+      </Layout>
+    );
+  }
+}
+
+export default EditableTable;
