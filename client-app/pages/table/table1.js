@@ -136,65 +136,25 @@ class EditableTable extends React.Component {
     ];
   }
 
-  handleCategoryChange = event => {
-    this.setState({ category: event.target.value });
-  };
-
-  handleProductNameChange = event => {
-    this.setState({ productname: event.target.value });
-  };
-  handleOsNameChange = event => {
-    this.setState({ os: event.target.value });
-  };
-  handleModelchange = event => {
-    this.setState({ model: event.target.value });
-  };
-  handleSerialnumberChange = event => {
-    this.setState({ serialnumber: event.target.value });
-  };
-  handlePriceChange = event => {
-    this.setState({ price: event.target.value });
-  };
-  handleEquipmentChange = event => {
-    this.setState({ equipment_condition: event.target.value });
-  };
-  handleDetailChange = event => {
-    this.setState({ detail: event.target.value });
-  };
-  handleImageChange = event => {
-    this.setState({ image: event.target.value });
-  };
-
-  handleSubmit = event => {
-    event.preventDefault();
-    // axios.post('https://app.subarnanto.com/api/product/new',
-    // axios.put('/api/product/update/:id',
-    console.log("recordid", this.state.products.id);
-    axios.put(`/api/product/update/:id`, {
-      category: this.state.category,
-      productname: this.state.productname,
-      os: this.state.os,
-      serialnumber: this.state.serialnumber,
-      model: this.state.model,
-      price: this.state.price,
-      equipment_condition: this.state.equipment_condition,
-      detail: this.state.detail,
-      image: this.state.image
-    });
-  };
-
-  componentDidMount() {
-    // axios.get('/api/product/orderedbydate').then(res => {
-    // axios.get('/api/product').then(res => {
-    // axios.get('https://app.subarnanto.com/api/product/orderedbyname').then(res => {
-    axios.get("https://demo-kemitraan.subarnanto.com/api/product").then(res => {
-      this.setState({ products: res.data });
-      // console.log({ products: res.data });
-    });
+  static async getInitialProps ({query}) {
+    // eslint-disable-next-line no-undef
+    console.log('query', query.id)
+    const res = await axios.get('http://localhost:5000/api/product')
+    return { products: res.data }
   }
 
+  // componentDidMount() {
+  //   axios.get("/api/product/orderedbydate").then(res => {
+  //     // axios.get('/api/product').then(res => {
+  //     // axios.get('https://app.subarnanto.com/api/product/orderedbyname').then(res => {
+  //     // axios.get("https://demo-kemitraan.subarnanto.com/api/product").then(res => {
+  //     this.setState({ products: res.data });
+  //     // console.log({ products: res.data });
+  //   });
+  // }
+
   isEditing = record => {
-    return record.id === this.state.editingKey;
+    return record.id === this.props.editingKey;
   };
 
   edit(id) {
@@ -244,6 +204,11 @@ class EditableTable extends React.Component {
   };
 
   render() {
+    
+    // CONSOLE LOG CHEK
+    console.log('props', this.props.products[0])
+    console.log('query', query.id)
+
     const components = {
       body: {
         row: EditableFormRow,
@@ -268,27 +233,19 @@ class EditableTable extends React.Component {
     });
 
     return (
-      <div>
-        {/* <Header />
-        <Title /> */}
-        <h1 style={{ fontFamily: "Quicksand", fontSize: "30px" }}>
-          Edit Data Produk
-        </h1>
-        <div>
-          <Layout>
-            <Table
-              style={{ background: "white" }}
-              rowKey={this.state.id}
-              components={components}
-              bordered
-              dataSource={this.state.products}
-              columns={columns}
-              rowClassName="editable-row"
-              scroll={{ x: 1300 }}
-            />
-          </Layout>
-        </div>
-      </div>
+      <Layout>
+        <h1>Edit Data Produk</h1>
+        <Table
+          dataSource={this.props.products}
+          rowKey={this.props.id}
+          components={components}
+          bordered
+          
+          columns={columns}
+          
+          scroll={{ x: 1300 }}
+        />
+      </Layout>
     );
   }
 }
