@@ -136,9 +136,9 @@ class EditableTable extends React.Component {
     ];
   }
 
-  static async getInitialProps ({query}) {
+  static async getInitialProps () {
     // eslint-disable-next-line no-undef
-    console.log('query', query.id)
+    // console.log('query', query.id)
     const res = await axios.get('http://localhost:5000/api/product')
     return { products: res.data }
   }
@@ -207,7 +207,7 @@ class EditableTable extends React.Component {
     
     // CONSOLE LOG CHEK
     console.log('props', this.props.products[0])
-    console.log('query', query.id)
+    // console.log('query', query.id)
 
     const components = {
       body: {
