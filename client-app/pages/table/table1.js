@@ -70,7 +70,7 @@ class EditableTable extends React.Component {
       {
         title: "Product Name",
         dataIndex: "productname",
-        width: "25%",
+        width: "15%",
         // fixed: 'left',
         editable: true
       },
@@ -83,19 +83,19 @@ class EditableTable extends React.Component {
       {
         title: "Category",
         dataIndex: "category",
-        width: "15%",
+        width: "10%",
         editable: true
       },
       {
         title: "Model",
         dataIndex: "model",
-        width: "20%",
+        width: "10%",
         editable: true
       },
       {
         title: "Serial Number",
         dataIndex: "serialnumber",
-        width: "20%",
+        width: "10%",
         editable: true
       },
       {
@@ -139,7 +139,8 @@ class EditableTable extends React.Component {
   static async getInitialProps () {
     // eslint-disable-next-line no-undef
     // console.log('query', query.id)
-    const res = await axios.get('http://localhost:5000/api/product')
+    const res = await axios.get('https://app.subarnanto.com/api/product/orderedbyname')
+    // const res = await axios.get('http://localhost:5000/api/product')
     return { products: res.data }
   }
 
@@ -239,11 +240,9 @@ class EditableTable extends React.Component {
           dataSource={this.props.products}
           rowKey={this.props.id}
           components={components}
-          bordered
-          
-          columns={columns}
-          
-          scroll={{ x: 1300 }}
+          bordered          
+          columns={columns}          
+          scroll={{ x: 1200 }}
         />
       </Layout>
     );
