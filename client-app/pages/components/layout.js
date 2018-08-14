@@ -13,6 +13,8 @@ export default ({ children }) => (
       <meta charSet="utf-8" />
       <link rel="stylesheet" href="/_next/static/style.css" />
     </Head>
+    {/* previously there was nothing inside the body tag, and it always produced an error
+    https://www.udemy.com/the-complete-junior-to-senior-web-developer-roadmap/learn/v4/questions/4920784 */}
     <style jsx global>{`body {padding: 0;}`}</style>
     <Layout className="layout">
       <Header>

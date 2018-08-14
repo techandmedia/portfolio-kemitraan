@@ -25,6 +25,7 @@
     "antd": "latest",
     "axios": "^0.18.0",
     "babel-plugin-import": "latest",
+    "express": "^4.16.3",
     "less": "latest",
     "next": "latest",
     "react": "latest",
